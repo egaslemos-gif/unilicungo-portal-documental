@@ -15,6 +15,7 @@ import { DocumentItem, LawArticle } from './types';
 export const App: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<string>(window.location.hash || '#/');
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [searchInitialQuery, setSearchInitialQuery] = useState<string>('');
   const [citationTarget, setCitationTarget] = useState<{ doc?: DocumentItem; art?: LawArticle } | null>(null);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export const App: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setIsSearchOpen(true);
+        handleOpenSearch('');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -41,6 +42,11 @@ export const App: React.FC = () => {
 
   const handleNavigate = (route: string) => {
     window.location.hash = route;
+  };
+
+  const handleOpenSearch = (initialQuery = '') => {
+    setSearchInitialQuery(initialQuery);
+    setIsSearchOpen(true);
   };
 
   const handleOpenCitation = (doc: DocumentItem, article?: LawArticle) => {
@@ -54,7 +60,7 @@ export const App: React.FC = () => {
       return (
         <HomePage
           onNavigate={handleNavigate}
-          onOpenSearch={() => setIsSearchOpen(true)}
+          onOpenSearch={(q) => handleOpenSearch(q || '')}
           onOpenCitation={(doc) => handleOpenCitation(doc)}
         />
       );
@@ -102,11 +108,31 @@ export const App: React.FC = () => {
       return <VisualizationsPage />;
     }
 
+    // Resilience: if an anchor hash like #/cine-06 or #cine-06 was navigated to, open the CINE reader
+    if (hash.startsWith('#/cine') || hash.startsWith('#cine')) {
+      return (
+        <ReaderPage
+          initialDocId="manual-cine"
+          onNavigate={handleNavigate}
+          onOpenCitation={(doc, art) => handleOpenCitation(doc, art)}
+        />
+      );
+    }
+
+    if (hash.startsWith('#/art') || hash.startsWith('#art')) {
+      return (
+        <ExplorerPage
+          onNavigate={handleNavigate}
+          onOpenCitation={(doc, art) => handleOpenCitation(doc, art)}
+        />
+      );
+    }
+
     // Default Fallback
     return (
       <HomePage
         onNavigate={handleNavigate}
-        onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenSearch={(q) => handleOpenSearch(q || '')}
         onOpenCitation={(doc) => handleOpenCitation(doc)}
       />
     );
@@ -117,7 +143,7 @@ export const App: React.FC = () => {
       <Navbar
         currentRoute={currentRoute}
         onNavigate={handleNavigate}
-        onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenSearch={() => handleOpenSearch('')}
       />
 
       <div className="flex-1">
@@ -129,7 +155,11 @@ export const App: React.FC = () => {
       {/* Global Spotlight Search Modal */}
       <GlobalSearchModal
         isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
+        initialQuery={searchInitialQuery}
+        onClose={() => {
+          setIsSearchOpen(false);
+          setSearchInitialQuery('');
+        }}
         onSelectResult={(url) => handleNavigate(url)}
       />
 

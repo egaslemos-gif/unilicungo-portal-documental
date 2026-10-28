@@ -7,9 +7,15 @@ interface GlobalSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectResult: (url: string) => void;
+  initialQuery?: string;
 }
 
-export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, onClose, onSelectResult }) => {
+export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSelectResult,
+  initialQuery 
+}) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -18,11 +24,12 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({ isOpen, on
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
-      setQuery('');
-      setResults([]);
+      const initQ = initialQuery || '';
+      setQuery(initQ);
+      setResults(initQ ? searchAll(initQ) : []);
       setSelectedIndex(0);
     }
-  }, [isOpen]);
+  }, [isOpen, initialQuery]);
 
   useEffect(() => {
     const res = searchAll(query);

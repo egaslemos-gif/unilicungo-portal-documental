@@ -25,7 +25,7 @@ import { DocumentItem } from '../types';
 
 interface HomePageProps {
   onNavigate: (route: string) => void;
-  onOpenSearch: () => void;
+  onOpenSearch: (initialQuery?: string) => void;
   onOpenCitation: (doc: DocumentItem) => void;
 }
 
@@ -38,99 +38,263 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onOpenSearch, on
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (localQuery.trim()) {
-      onOpenSearch();
-    }
+    onOpenSearch(localQuery);
   };
 
   return (
     <div className="space-y-16 pb-16">
       
-      {/* HERO SECTION */}
-      <section className="relative overflow-hidden bg-radial from-emerald-900 via-slate-900 to-slate-950 text-white py-16 sm:py-24 px-4 sm:px-6 lg:px-8 border-b border-emerald-900/40">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+      {/* HERO SECTION - REFINED WITH DARK EMERALD INSTITUTIONAL THEME & HIGH CONTRAST */}
+      <section 
+        className="relative overflow-hidden text-white py-14 sm:py-20 px-4 sm:px-6 lg:px-8 border-b border-emerald-900/60 shadow-2xl"
+        style={{
+          background: 'linear-gradient(180deg, #021a12 0%, #052a1d 35%, #083827 70%, #031c13 100%)',
+          backgroundColor: '#021a12'
+        }}
+      >
+        {/* Ambient Top Glow Effect */}
+        <div 
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[800px] h-[380px] pointer-events-none rounded-full blur-3xl opacity-20"
+          style={{ background: 'radial-gradient(circle, #10b981 0%, #059669 40%, transparent 70%)' }}
+        />
+
+        {/* Crisp Grid Dot Pattern */}
+        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#34d399_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
         
-        <div className="relative max-w-5xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium tracking-wide">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="relative max-w-5xl mx-auto text-center space-y-7">
+          
+          {/* Institutional Top Indicator Badge */}
+          <div className="inline-flex items-center space-x-2.5 px-4 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold tracking-wide shadow-inner backdrop-blur-sm">
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>Repositório Institucional de Consulta e Estudo Normativo</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
           </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
-            Universidade Licungo <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">
+          {/* Institutional Brand & Main Title */}
+          <div className="space-y-3">
+            <div className="text-emerald-400 font-bold text-xs sm:text-sm tracking-widest uppercase flex items-center justify-center space-x-2">
+              <span>Universidade Licungo</span>
+              <span className="text-emerald-600">•</span>
+              <span>Gabinete de Garantia de Qualidade (GAQ)</span>
+              <span className="text-emerald-600">•</span>
+              <span>CNAQ</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
               Portal de Consulta e Estudo Documental
-            </span>
-          </h1>
+            </h1>
 
-          <p className="max-w-3xl mx-auto text-sm sm:text-base text-slate-300 font-light leading-relaxed">
-            Legislação, documentos institucionais e instrumentos de referência para consulta, estudo, comparação e compreensão da reforma curricular e garantia de qualidade (CNAQ / QNQ).
-          </p>
+            <p className="max-w-3xl mx-auto text-sm sm:text-base text-slate-200 font-normal leading-relaxed">
+              Legislação, documentos institucionais e instrumentos de referência para consulta, estudo, comparação e compreensão da reforma curricular e garantia de qualidade (CNAQ / QNQ).
+            </p>
+          </div>
 
-          {/* Hero Search Bar */}
+          {/* Interactive Hero Search Form */}
           <div className="max-w-2xl mx-auto pt-2">
-            <div 
-              onClick={onOpenSearch}
-              className="flex items-center bg-white dark:bg-slate-900/90 rounded-xl p-2 shadow-2xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-emerald-500 transition-all text-left"
+            <form 
+              onSubmit={handleHeroSearch}
+              className="flex items-center bg-white dark:bg-slate-900 rounded-2xl p-2 shadow-2xl border-2 border-emerald-500/40 hover:border-emerald-400 focus-within:border-emerald-400 focus-within:ring-4 focus-within:ring-emerald-500/20 transition-all text-left"
             >
-              <Search className="w-5 h-5 text-emerald-600 dark:text-emerald-400 ml-2 mr-3 shrink-0" />
-              <div className="flex-1 text-slate-400 text-sm">
-                Pesquise por diplomas, artigos, domínios CINE, níveis QNQ, unidades curriculares...
+              <Search className="w-5 h-5 text-emerald-600 dark:text-emerald-400 ml-3 mr-2 shrink-0" />
+              <input 
+                type="text"
+                value={localQuery}
+                onChange={(e) => setLocalQuery(e.target.value)}
+                placeholder="Pesquise por artigos, diplomas (Lei 1/2023, Dec. 43/2023), áreas CINE, níveis QNQ..."
+                className="w-full bg-transparent border-0 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none text-sm py-2 px-1 font-medium"
+              />
+              <div className="hidden sm:flex items-center space-x-1 mr-2 px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-500 shrink-0">
+                <span>Ctrl</span>
+                <span>K</span>
               </div>
               <button 
-                type="button" 
-                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
+                type="submit" 
+                className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold shadow-md transition-all shrink-0 flex items-center space-x-1.5"
               >
-                Pesquisar
+                <span>Pesquisar</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
-            </div>
+            </form>
           </div>
 
-          {/* Quick links under search */}
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-xs text-slate-400">
-            <span className="text-slate-500">Atalhos rápidos:</span>
-            <button onClick={() => onNavigate('#/explorador?doc=lei-1-2023&art=lei-1-2023-art-28')} className="hover:text-emerald-300 underline underline-offset-2">
+          {/* Quick Shortcuts */}
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-xs text-slate-300">
+            <span className="text-emerald-400/80 font-medium">Atalhos rápidos:</span>
+            <button 
+              type="button"
+              onClick={() => onNavigate('#/explorador?doc=lei-1-2023&art=lei-1-2023-art-28')} 
+              className="px-2.5 py-1 rounded-md bg-emerald-950/60 hover:bg-emerald-800/80 text-emerald-200 border border-emerald-700/50 hover:border-emerald-500 transition-colors"
+            >
               Art. 28 SINAQES
             </button>
-            <span>•</span>
-            <button onClick={() => onNavigate('#/explorador?doc=decreto-43-2023&art=decreto-43-2023-art-4')} className="hover:text-emerald-300 underline underline-offset-2">
+            <button 
+              type="button"
+              onClick={() => onNavigate('#/explorador?doc=decreto-43-2023&art=decreto-43-2023-art-4')} 
+              className="px-2.5 py-1 rounded-md bg-emerald-950/60 hover:bg-emerald-800/80 text-emerald-200 border border-emerald-700/50 hover:border-emerald-500 transition-colors"
+            >
               Art. 4 Decreto 43 (Domínios)
             </button>
-            <span>•</span>
-            <button onClick={() => onNavigate('#/visualizacoes?tab=qnq')} className="hover:text-emerald-300 underline underline-offset-2">
+            <button 
+              type="button"
+              onClick={() => onNavigate('#/visualizacoes?tab=qnq')} 
+              className="px-2.5 py-1 rounded-md bg-emerald-950/60 hover:bg-emerald-800/80 text-emerald-200 border border-emerald-700/50 hover:border-emerald-500 transition-colors"
+            >
               10 Níveis QNQ
             </button>
-            <span>•</span>
-            <button onClick={() => onNavigate('#/visualizacoes?tab=cine')} className="hover:text-emerald-300 underline underline-offset-2">
+            <button 
+              type="button"
+              onClick={() => onNavigate('#/leitor/manual-cine')} 
+              className="px-2.5 py-1 rounded-md bg-emerald-950/60 hover:bg-emerald-800/80 text-emerald-200 border border-emerald-700/50 hover:border-emerald-500 transition-colors"
+            >
               Árvore CINE
             </button>
+            <button 
+              type="button"
+              onClick={() => onNavigate('#/leitor/plano-socializacao')} 
+              className="px-2.5 py-1 rounded-md bg-emerald-950/60 hover:bg-emerald-800/80 text-emerald-200 border border-emerald-700/50 hover:border-emerald-500 transition-colors"
+            >
+              10 Faculdades UniLicungo
+            </button>
           </div>
+
+          {/* 4 DIRECT ACTION GATEWAY CARDS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-5 text-left max-w-5xl mx-auto">
+            
+            {/* Card 1: Lei 1/2023 */}
+            <div
+              onClick={() => onNavigate('#/leitor/lei-1-2023')}
+              className="bg-slate-900/80 hover:bg-slate-900 border border-emerald-500/25 hover:border-emerald-400 rounded-xl p-4 transition-all duration-200 backdrop-blur-sm cursor-pointer group shadow-lg flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    Lei Nacional
+                  </span>
+                  <BookOpen className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-bold text-sm text-white group-hover:text-emerald-300 transition-colors">
+                  Lei n.º 1/2023
+                </h3>
+                <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                  107 Artigos oficiais do Ensino Superior, SINAQES, acreditação e graus académicos.
+                </p>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-emerald-900/50 flex items-center justify-between text-xs font-semibold text-emerald-400 group-hover:text-emerald-300">
+                <span>Leitura Integral</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* Card 2: Decreto 43/2023 */}
+            <div
+              onClick={() => onNavigate('#/leitor/decreto-43-2023')}
+              className="bg-slate-900/80 hover:bg-slate-900 border border-emerald-500/25 hover:border-emerald-400 rounded-xl p-4 transition-all duration-200 backdrop-blur-sm cursor-pointer group shadow-lg flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                    Regulamento IES
+                  </span>
+                  <Compass className="w-4 h-4 text-teal-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-bold text-sm text-white group-hover:text-teal-300 transition-colors">
+                  Decreto n.º 43/2023
+                </h3>
+                <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                  Art. 4 fixa os Domínios de Conhecimento CINE como critério obrigatório de criação de cursos.
+                </p>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-emerald-900/50 flex items-center justify-between text-xs font-semibold text-teal-400 group-hover:text-teal-300">
+                <span>Consultar Artigo 4</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* Card 3: Manual CINE Brasil */}
+            <div
+              onClick={() => onNavigate('#/leitor/manual-cine')}
+              className="bg-slate-900/80 hover:bg-slate-900 border border-emerald-500/25 hover:border-emerald-400 rounded-xl p-4 transition-all duration-200 backdrop-blur-sm cursor-pointer group shadow-lg flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    Referencial Técnico
+                  </span>
+                  <BarChart3 className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-bold text-sm text-white group-hover:text-amber-300 transition-colors">
+                  Manual CINE Brasil
+                </h3>
+                <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                  10 Áreas Gerais (00-10), Áreas Específicas e Detalhadas com critérios de carga horária.
+                </p>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-emerald-900/50 flex items-center justify-between text-xs font-semibold text-amber-400 group-hover:text-amber-300">
+                <span>Explorar Áreas</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* Card 4: Plano UniLicungo */}
+            <div
+              onClick={() => onNavigate('#/leitor/plano-socializacao')}
+              className="bg-slate-900/80 hover:bg-slate-900 border border-emerald-500/25 hover:border-emerald-400 rounded-xl p-4 transition-all duration-200 backdrop-blur-sm cursor-pointer group shadow-lg flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    UniLicungo GAQ
+                  </span>
+                  <Building2 className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+                </div>
+                <h3 className="font-bold text-sm text-white group-hover:text-blue-300 transition-colors">
+                  Plano de Socialização
+                </h3>
+                <p className="text-xs text-slate-300 mt-1 line-clamp-2">
+                  Auscultação das 10 Faculdades e Centros de Quelimane, Sofala e E-learning.
+                </p>
+              </div>
+              <div className="mt-3 pt-2.5 border-t border-emerald-900/50 flex items-center justify-between text-xs font-semibold text-blue-400 group-hover:text-blue-300">
+                <span>Ver Faculdades</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
-      {/* METRICS & STATS BAR */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10">
+      {/* METRICS & STATS BAR - ELEVATED WITH INTERACTIVE NAVIGATION */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-10">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           {[
-            { label: 'Documentos Integrais', val: portalStats.totalDocuments, icon: BookOpen, desc: '9 fontes auditadas' },
-            { label: 'Páginas Analisadas', val: portalStats.totalPages, icon: FileText, desc: '232 páginas lidas' },
-            { label: 'Artigos Normativos', val: portalStats.totalArticles, icon: Compass, desc: '3 leis principais' },
-            { label: 'Níveis do QNQ', val: portalStats.totalQnqLevels, icon: Layers, desc: 'Grelha nacional' },
-            { label: 'Domínios CINE', val: portalStats.totalCineGeneralAreas, icon: BarChart3, desc: 'Áreas 00 a 10' },
-            { label: 'Faculdades Abrangidas', val: portalStats.totalFacultiesUniLicungo, icon: Building2, desc: 'Quelimane & Sofala' },
+            { label: 'Documentos Oficiais', val: portalStats.totalDocuments, icon: BookOpen, desc: '9 fontes auditadas', route: '#/biblioteca' },
+            { label: 'Páginas Analisadas', val: portalStats.totalPages, icon: FileText, desc: '232 páginas lidas', route: '#/leitor/lei-1-2023' },
+            { label: 'Artigos Normativos', val: portalStats.totalArticles, icon: Compass, desc: '3 leis principais', route: '#/explorador' },
+            { label: 'Níveis do QNQ', val: portalStats.totalQnqLevels, icon: Layers, desc: 'Grelha nacional', route: '#/visualizacoes?tab=qnq' },
+            { label: 'Domínios CINE', val: portalStats.totalCineGeneralAreas, icon: BarChart3, desc: 'Áreas 00 a 10', route: '#/leitor/manual-cine' },
+            { label: 'Faculdades Abrangidas', val: portalStats.totalFacultiesUniLicungo, icon: Building2, desc: 'Quelimane & Sofala', route: '#/leitor/plano-socializacao' },
           ].map((st) => {
             const Icon = st.icon;
             return (
-              <div key={st.label} className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-800 flex items-center space-x-3">
-                <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+              <div 
+                key={st.label} 
+                onClick={() => onNavigate(st.route)}
+                className="bg-white dark:bg-slate-900 rounded-xl p-4 shadow-md hover:shadow-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500/60 dark:hover:border-emerald-500/50 transition-all duration-200 cursor-pointer flex items-center space-x-3 group"
+              >
+                <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors shrink-0">
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-xl font-extrabold text-slate-900 dark:text-white leading-tight">
+                  <div className="text-xl font-black text-slate-900 dark:text-white leading-tight group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                     {st.val}
                   </div>
-                  <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                     {st.label}
+                  </div>
+                  <div className="text-[10px] text-slate-400 dark:text-slate-500 hidden sm:block">
+                    {st.desc}
                   </div>
                 </div>
               </div>
