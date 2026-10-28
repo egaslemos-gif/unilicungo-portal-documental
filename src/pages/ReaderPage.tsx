@@ -19,7 +19,10 @@ import {
   FileCheck,
   Maximize2,
   Filter,
-  X
+  X,
+  ZoomIn,
+  ZoomOut,
+  RotateCw
 } from 'lucide-react';
 import { documentsCatalog } from '../data/documents';
 import { allLawArticles, getArticlesByDocId } from '../data/laws';
@@ -41,12 +44,28 @@ export const ReaderPage: React.FC<ReaderPageProps> = ({ initialDocId = 'lei-1-20
   const [searchInDoc, setSearchInDoc] = useState('');
   const [activeTab, setActiveTab] = useState<'estruturado' | 'scans' | 'metadados'>('estruturado');
   const [selectedScanIndex, setSelectedScanIndex] = useState(0);
+  const [scanZoom, setScanZoom] = useState(1);
+  const [scanRotation, setScanRotation] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Focus / Filtering state within document
   const [selectedCineAreaCode, setSelectedCineAreaCode] = useState<string | null>(null);
   const [highlightedElementId, setHighlightedElementId] = useState<string | null>(null);
+
+  // Helper to reliably resolve scan image paths across Vite dev and build
+  const getScanImageUrl = (scanPath?: string) => {
+    if (!scanPath) return '';
+    if (scanPath.startsWith('http://') || scanPath.startsWith('https://')) return scanPath;
+    const fileName = scanPath.replace(/^.*[\\\/]/, '');
+    return `./assets/scans/${fileName}`;
+  };
+
+  useEffect(() => {
+    setSelectedScanIndex(0);
+    setScanZoom(1);
+    setScanRotation(0);
+  }, [currentDocId]);
 
   // Sync if initialDocId changes
   useEffect(() => {
@@ -172,18 +191,18 @@ export const ReaderPage: React.FC<ReaderPageProps> = ({ initialDocId = 'lei-1-20
     <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-slate-50 dark:bg-slate-950">
       
       {/* Top Document Selection Bar */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2.5 flex items-center justify-between gap-4 shrink-0 shadow-2xs">
-        <div className="flex items-center space-x-3 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 sm:px-4 py-2.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-4 shrink-0 shadow-2xs">
+        <div className="flex items-center space-x-2 sm:space-x-3 overflow-hidden min-w-0">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
             title="Alternar Índice Lateral"
           >
             {sidebarOpen ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
           </button>
 
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:inline">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:inline shrink-0">
               Documento:
             </span>
             <select
@@ -194,7 +213,7 @@ export const ReaderPage: React.FC<ReaderPageProps> = ({ initialDocId = 'lei-1-20
                 setSelectedCineAreaCode(null);
                 setHighlightedElementId(null);
               }}
-              className="px-3 py-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white max-w-xs sm:max-w-md truncate focus:outline-none focus:border-emerald-500"
+              className="px-2.5 py-1.5 text-xs font-semibold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white max-w-[170px] sm:max-w-xs md:max-w-sm lg:max-w-md truncate focus:outline-none focus:border-emerald-500"
             >
               {documentsCatalog.map((d) => (
                 <option key={d.id} value={d.id}>
@@ -206,14 +225,14 @@ export const ReaderPage: React.FC<ReaderPageProps> = ({ initialDocId = 'lei-1-20
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center space-x-2 shrink-0">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
           {/* Tab Selector */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-xs">
             <button
               onClick={() => setActiveTab('estruturado')}
-              className={`px-3 py-1 rounded-md font-medium transition-colors ${
+              className={`px-2.5 sm:px-3 py-1 rounded-md font-medium transition-colors text-xs ${
                 activeTab === 'estruturado'
-                  ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-2xs'
+                  ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-2xs font-bold'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -222,9 +241,9 @@ export const ReaderPage: React.FC<ReaderPageProps> = ({ initialDocId = 'lei-1-20
             {currentDoc.scansAvailable && currentDoc.scansAvailable.length > 0 && (
               <button
                 onClick={() => setActiveTab('scans')}
-                className={`px-3 py-1 rounded-md font-medium transition-colors flex items-center space-x-1 ${
+                className={`px-2.5 sm:px-3 py-1 rounded-md font-medium transition-colors flex items-center space-x-1 text-xs ${
                   activeTab === 'scans'
-                    ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-2xs'
+                    ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-2xs font-bold'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
@@ -234,9 +253,9 @@ export const ReaderPage: React.FC<ReaderPageProps> = ({ initialDocId = 'lei-1-20
             )}
             <button
               onClick={() => setActiveTab('metadados')}
-              className={`px-3 py-1 rounded-md font-medium transition-colors ${
+              className={`px-2.5 sm:px-3 py-1 rounded-md font-medium transition-colors text-xs ${
                 activeTab === 'metadados'
-                  ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-2xs'
+                  ? 'bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-400 shadow-2xs font-bold'
                   : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -255,21 +274,29 @@ export const ReaderPage: React.FC<ReaderPageProps> = ({ initialDocId = 'lei-1-20
           <a
             href={currentDoc.pdfUrl}
             download={currentDoc.originalFilename}
-            className="flex items-center space-x-1 px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-medium shadow-2xs"
+            className="flex items-center space-x-1 px-2.5 sm:px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-semibold shadow-2xs shrink-0"
             title="Descarregar PDF original do arquivo"
           >
-            <Download className="w-3.5 h-3.5 mr-1" />
+            <Download className="w-3.5 h-3.5 sm:mr-1" />
             <span className="hidden sm:inline">Baixar PDF</span>
           </a>
         </div>
       </div>
 
       {/* Main Workspace Layout (Sidebar + Content Pane) */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         
+        {/* Mobile Backdrop when Sidebar is open on small screens */}
+        {sidebarOpen && (
+          <div 
+            onClick={() => setSidebarOpen(false)}
+            className="md:hidden fixed inset-0 top-[110px] z-20 bg-slate-900/40 backdrop-blur-xs transition-opacity"
+          />
+        )}
+
         {/* LEFT SIDEBAR: Table of Contents / Interactive Filter */}
         {sidebarOpen && (
-          <aside className="w-80 shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full overflow-hidden">
+          <aside className="fixed md:static inset-y-0 left-0 top-0 md:top-auto z-30 w-80 max-w-[85vw] md:max-w-none shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col h-full overflow-hidden shadow-2xl md:shadow-none transition-all">
             {/* Filter Search Field */}
             <div className="p-3 border-b border-slate-200 dark:border-slate-800 space-y-2">
               <div className="relative">
@@ -953,34 +980,139 @@ export const ReaderPage: React.FC<ReaderPageProps> = ({ initialDocId = 'lei-1-20
           {/* TAB CONTENT: SCANS ORIGINAIS */}
           {activeTab === 'scans' && currentDoc.scansAvailable && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
-                <span className="text-xs text-slate-500 font-medium">
-                  Página do Scan ({selectedScanIndex + 1} de {currentDoc.scansAvailable.length}):
-                </span>
+              
+              {/* Scan Toolbar */}
+              <div className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                
+                {/* Page Selector */}
                 <div className="flex items-center space-x-2">
-                  {currentDoc.scansAvailable.map((scanPath, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedScanIndex(idx)}
-                      className={`px-3 py-1 rounded text-xs font-semibold ${
-                        selectedScanIndex === idx
-                          ? 'bg-emerald-700 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                      }`}
-                    >
-                      Pág. {idx + 1}
-                    </button>
-                  ))}
+                  <span className="text-xs text-slate-500 font-semibold">
+                    Página ({selectedScanIndex + 1} de {currentDoc.scansAvailable.length}):
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {currentDoc.scansAvailable.map((scanPath, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setSelectedScanIndex(idx);
+                          setScanZoom(1);
+                        }}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                          selectedScanIndex === idx
+                            ? 'bg-emerald-700 text-white shadow-xs'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        Pág. {idx + 1}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Zoom, Rotate & Export Controls */}
+                <div className="flex items-center space-x-1.5 text-xs">
+                  <button
+                    onClick={() => setScanZoom((prev) => Math.min(prev + 0.25, 3))}
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Aumentar Zoom (+25%)"
+                  >
+                    <ZoomIn className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setScanZoom((prev) => Math.max(prev - 0.25, 0.5))}
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Diminuir Zoom (-25%)"
+                  >
+                    <ZoomOut className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setScanZoom(1);
+                      setScanRotation(0);
+                    }}
+                    className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-mono text-[11px] transition-colors"
+                    title="Repor Zoom (100%)"
+                  >
+                    {Math.round(scanZoom * 100)}%
+                  </button>
+                  <button
+                    onClick={() => setScanRotation((prev) => (prev + 90) % 360)}
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Girar 90°"
+                  >
+                    <RotateCw className="w-4 h-4" />
+                  </button>
+                  <a
+                    href={getScanImageUrl(currentDoc.scansAvailable[selectedScanIndex])}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Abrir imagem em alta resolução noutra janela"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                  <a
+                    href={getScanImageUrl(currentDoc.scansAvailable[selectedScanIndex])}
+                    download={currentDoc.scansAvailable[selectedScanIndex]}
+                    className="p-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 transition-colors"
+                    title="Descarregar imagem original do scan"
+                  >
+                    <Download className="w-4 h-4" />
+                  </a>
+                </div>
+
+              </div>
+
+              {/* High-Resolution Scan Display Frame */}
+              <div className="bg-slate-200/70 dark:bg-slate-950 rounded-2xl p-4 sm:p-6 border border-slate-300 dark:border-slate-800 flex justify-center items-center overflow-auto shadow-inner min-h-[500px]">
+                <div 
+                  className="transition-transform duration-200 ease-out origin-center inline-block"
+                  style={{ 
+                    transform: `scale(${scanZoom}) rotate(${scanRotation}deg)`
+                  }}
+                >
+                  <img
+                    src={getScanImageUrl(currentDoc.scansAvailable[selectedScanIndex])}
+                    alt={`Scan da Página ${selectedScanIndex + 1} de ${currentDoc.title}`}
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      const fileName = currentDoc.scansAvailable![selectedScanIndex].replace(/^.*[\\\/]/, '');
+                      const step = Number(target.dataset.retryStep || '0');
+                      if (step === 0) {
+                        target.dataset.retryStep = '1';
+                        target.src = `./scans/${fileName}`;
+                      } else if (step === 1) {
+                        target.dataset.retryStep = '2';
+                        target.src = `./${fileName}`;
+                      } else if (step === 2) {
+                        target.dataset.retryStep = '3';
+                        target.src = `/assets/scans/${fileName}`;
+                      } else if (step === 3) {
+                        target.dataset.retryStep = '4';
+                        target.src = `/scans/${fileName}`;
+                      } else if (step === 4) {
+                        target.dataset.retryStep = '5';
+                        target.src = `assets/scans/${fileName}`;
+                      }
+                    }}
+                    className="max-h-[85vh] w-auto max-w-full object-contain rounded-lg border border-slate-300 dark:border-slate-700 shadow-2xl bg-white"
+                  />
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-800 flex justify-center shadow-xs">
-                <img
-                  src={currentDoc.scansAvailable[selectedScanIndex]}
-                  alt={`Scan da Página ${selectedScanIndex + 1}`}
-                  className="max-h-[700px] w-auto object-contain rounded border border-slate-200 dark:border-slate-800 shadow-md"
-                />
+              {/* Informative Scan Notice */}
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center justify-between text-xs text-emerald-900 dark:text-emerald-200">
+                <div className="flex items-center space-x-2">
+                  <FileCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>
+                    Ficheiro original escaneado em alta resolução. Use os controlos acima para ampliar assinaturas, despachos e carimbos.
+                  </span>
+                </div>
+                <span className="font-mono text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold shrink-0 hidden sm:inline">
+                  {currentDoc.scansAvailable[selectedScanIndex]}
+                </span>
               </div>
+
             </div>
           )}
 

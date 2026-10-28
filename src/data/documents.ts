@@ -124,7 +124,8 @@ export const documentsCatalog: DocumentItem[] = [
         description: 'A Universidade Licungo desenhou o plano institucional especificamente para conformar todos os seus cursos ao Artigo 4 deste Decreto.',
         sourceExcerpt: 'Título do Plano institucional: "...conforme artigo 4 decreto 43 de 2023".'
       }
-    ]
+    ],
+    scansAvailable: ['d43_p16_clip.png']
   },
   {
     id: 'decreto-61-2022',
@@ -240,6 +241,23 @@ export const documentsCatalog: DocumentItem[] = [
         description: 'A metodologia do Plano de Socialização da UniLicungo visa socializar estes exatos domínios e áreas específicas com os directores de faculdade.',
         sourceExcerpt: 'Secção 1 do Plano da UniLicungo.'
       }
+    ],
+    scansAvailable: [
+      'manual-dominios-conhecimento-cine_p1.png',
+      'manual-dominios-conhecimento-cine_p2.png',
+      'manual-dominios-conhecimento-cine_p3.png',
+      'manual-dominios-conhecimento-cine_p16.png',
+      'manual-dominios-conhecimento-cine_p80.png',
+      'manual-dominios-conhecimento-cine_p81.png',
+      'manual-dominios-conhecimento-cine_p82.png',
+      'manual-dominios-conhecimento-cine_p83.png',
+      'manual-dominios-conhecimento-cine_p84.png',
+      'manual-dominios-conhecimento-cine_p88.png',
+      'manual-dominios-conhecimento-cine_p92.png',
+      'manual-dominios-conhecimento-cine_p93.png',
+      'manual-dominios-conhecimento-cine_p94.png',
+      'manual-dominios-conhecimento-cine_p163.png',
+      'manual-dominios-conhecimento-cine_p164.png'
     ]
   },
   {
